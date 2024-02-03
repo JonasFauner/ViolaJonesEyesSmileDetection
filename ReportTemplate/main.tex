@@ -7,6 +7,8 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
+\usepackage{float}
+
 %for code
 \usepackage{listings}
 \usepackage{color}
@@ -82,23 +84,18 @@ Our results were reasonably accurate, yet not flawless. We encountered issues wh
 %\begin{align}
 %    I_S = k_S M_S I_L \left( \cos \frac{\phi}{2} \right)^m = k_S M_S I_L \left( \mathbf{n} \cdot \mathbf{h} \right)^m
 %\end{align}
- The key techniques include the use of Haar Cascade Classifiers, trained on numerous positive and negative images, to identify objects like faces, smiles, and eyes. The script enhances processing efficiency and accuracy through image resizing and grayscaling, standardizing dimensions and simplifying data. It utilizes the detectMultiScale function with adjustable parameters like scaleFactor and minNeighbors for precision in feature detection. The script's visual feedback mechanism involves drawing rectangles around detected features and displaying images for user interaction. These methods collectively enable effective detection and visualization of facial features in various images.
+ The key techniques include the use of Haar Cascade Classifiers, trained on numerous positive and negative images, to identify objects like faces, smiles, and eyes. The script enhances processing efficiency and accuracy through image resizing and gray scaling, standardizing dimensions and simplifying data. It utilizes the detectMultiScale function with adjustable parameters like scaleFactor and minNeighbors for precision in feature detection. The script's visual feedback mechanism involves drawing rectangles around detected features and displaying images for user interaction. These methods collectively enable effective detection and visualization of facial features in various images.
 
 \section*{Method}
-We used pretrained classifier from Github, for the smile and eyes detection \cite{OpencvDataHaarcascades}:
+For the implementation of the Viola-Jones algorithm for detecting smiles and eyes, we utilized pre-trained classifiers available on GitHub \cite{OpencvDataHaarcascades}. These classifiers are based on Haar Cascade, a machine learning object detection method used to identify objects. Specifically, the code employs two separate classifiers: one for eye detection and another for smile detection. This is instantiated in the Python code using the OpenCV library as follows:
 \begin{lstlisting}
-faceCascade = cv2.CascadeClassifier('haarcascade_frontal face_default.xml')
 eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
+smile_cascade = cv2.CascadeClassifier('haarcascade_smile.xml')
 \end{lstlisting}
-
-Iteratet over images
-We resized the images
-Used just Gray images
-Used Face detection to lower false positives
-
-used eye\_cascade.detectMultiScale(...)
-
-
+The haarcascade\_eye.xml and haarcascade\_smile.xml, are XML files containing the data to identify eyes and smiles, respectively. \\\\
+We employed a systematic approach to detect eyes and smiles in images. The process began by iterating over a collection of images  from the Caltech256 dataset, using the 159.people class \cite{CaltechDatasetImages}. Each image was first resized to standardize the input size, for better accuracy. Following this, the images were converted to gray scale. This conversion is a significant step because gray scale images enhance the effectiveness of the Haar Cascade algorithm used in eye and smile detection; the algorithm performs more efficiently due to the reduced complexity of gray scale images compared to colored ones.\\
+After preparing the images, we utilized face detection to establish a 'region of interest' (ROI) in each image. This step significantly reduced false positives by focusing the detection of eyes and smiles within the bounds of detected faces, thereby ignoring irrelevant areas of the image. In detail we described this concept of ROI under result. \\
+The core of the detection process involved the use of the eye\_cascade and smile\_cascade classifiers. Within each ROI, the detection of eyes and smiles was executed using the following code:
 \begin{lstlisting}
 eyes = eye_cascade.detectMultiScale(roiGray, scaleFactor=1.1, minNeighbors=7, minSize=(20, 20)) 
 smiles = smile_cascade.detectMultiScale(roiGray, scaleFactor=1.3 , minNeighbors=20 , minSize=(25, 25))
@@ -109,8 +106,9 @@ for (ex, ey, ew, eh) in eyes:
 for (sx, sy, sw, sh) in smiles:
     cv2.rectangle(roiImg, (sx, sy), (sx+sw, sy+sh), (0, 255, 0), 2)
 \end{lstlisting}
+We visualized the results by drawing rectangles around the detected eyes and smiles. Blue rectangles show detected eyes, green rectangles indicate smiles.\\\\
 %
-We found out, that ‚scaleFactor‘ and ‚minNeighbors‘ are important parameters used in the ‚detectMultiScale‘ method in OpenCV. These parameters are crucial for effectively detecting objects like faces, eyes, or smiles in images. \\\\
+We found out, that 'scaleFactor' and 'minNeighbors' are important parameters used in the 'detectMultiScale' method in OpenCV. These parameters are crucial for effectively detecting objects like faces, eyes, or smiles in images. \\
 Following the purpose and impact of the parameters:\\\\
 \textbf{scaleFactor}\\
 The parameter specifies how much the image size is reduced at each image scale. This window is scaled down in size for each subsequent pass, allowing the algorithm to detect objects at various sizes (since an object can appear larger or smaller depending on its distance from the camera).
@@ -119,12 +117,12 @@ Typical Values are: 1.1, 1.2, 1.3 etc.
 A scale factor of 1.1 means that in each subsequent round, the search window is scaled down to 90\% of its previous size\\\\
 \textbf{minNeighbors}\\
 The minNeighbors parameter specifies the number of neighbors a rectangle should have to be retained as detection. After the size of the moving window is set by the scaleFactor, the algorithm needs to decide whether a given window location contains the object (like a face or an eye). minNeighbors sets the condition for reliability of detection.\\
-A higher value results in fewer detections but with higher quality. A lower value increases the number of detections but also increases the number of false positives. \\
+A higher value results in fewer detection but with higher quality. A lower value increases the number of detection but also increases the number of false positives. \\
 Typical Values are small integer values, like 3, 4, 5.\\\\
 \textbf{minSize}\\
 The minSize parameter sets the minimum size of the detection window. Any object smaller than this size will not be considered during the detection process.
 In images where there is a lot of noise or smaller, irrelevant features, setting an appropriate minSize can help to reduce false positives.\\
-Typical Values are [20, 20] or .\\\\
+Typical Values are [20, 20] or [30, 30].\\\\
 Especially we had to find the right balance for scaleFactor and minNeighbors:
 \begin{itemize}
     \item If we are missing objects, we have to decrease scaleFactor or minNeighbors
@@ -136,8 +134,37 @@ Especially we had to find the right balance for scaleFactor and minNeighbors:
 
 \section*{Results}
 
-At the beginning we got poor results, after tuning these parameters the performance improved.
+At the beginning we got poor results, but after tuning these parameters the performance improved. The fine tuning of these parameter were a trade off between missing too many smiles and eyes and getting too many false positives. \\\\
+%
+First we used a large scaleFacor of 1.3 and a minNeighbors value of 3 for the eyes and a scaleFactor of 1.7 and a large minNeighbors value of 20 for the smiles. Figure \ref{fig:01_fewFalsePositives} shows the results. We get few false positives, but also miss many features, especially smiles.
+%
+\begin{figure}[H]
+ \includegraphics[width=1.0\columnwidth]{images/01_fewFalsePositives_fewDetected.png}
+ \centering
+ \setlength{\abovecaptionskip}{1pt}
+ \caption{Few false positives but a lot of smiles and eyes are not detected.}
+ \label{fig:01_fewFalsePositives}
+\end{figure}
+%
+Than we used a smaller scaleFacor of 1.1 and the same minNeighbors value of 3 for the eyes and a smaller scaleFactor of 1.1 and a smaller minNeighbors value of 10 for the smiles. In figure \ref{fig:01_manyFalsePositives} we can see the results. We detect now way more smiles (f.ex. see the last image), but also get many false positives (f.ex. second image).
+\begin{figure}[H]
+ \includegraphics[width=1.0\columnwidth]{images/02_manyFalsePositives_manyDetected.png}
+ \centering
+ \setlength{\abovecaptionskip}{1pt}
+ \caption{Many eyes and smiles detected, but also many false positives.}
+ \label{fig:01_manyFalsePositives}
+\end{figure}
+%
+In the last try we used a trade off: a scaleFactor of 1.1 and a minNeighbors value of 7 for the eyes and a scaleFactor of 1.3 and a minNeighbors value of 20 for the smiles. Figure \ref{fig:03_tradeof} shows that we detect now more smiles and eyes, but don't get too many false positives. We decided to use this set of parameters for our project.
+\begin{figure}[H]
+ \includegraphics[width=1.0\columnwidth]{images/03_tradeof.png}
+ \centering
+ \setlength{\abovecaptionskip}{1pt}
+ \caption{A trade off between false positives and detected eyes and smiles.}
+ \label{fig:03_tradeof}
+\end{figure}
 
+As already mentioned before, we defined a region of interest (ROI) to improve the accuracy:
 \begin{lstlisting}
 faces = faceCascade.detectMultiScale(gray, scaleFactor=1.2 , minNeighbors=5, minSize=(30, 30))
 for (x, y, w, h) in faces:
@@ -147,37 +174,14 @@ for (x, y, w, h) in faces:
 
         # Drawing a rectangle around the detected face in the color image
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
 \end{lstlisting}
-
-
-
-
-\begin{figure}[h]
- \includegraphics[width=1.0\columnwidth]{images/01_fewFalsePositives_fewDetected.png}
- \centering
- \caption{Few false positives but also a lot of smiles and eyes not detected.}
- \label{fig:01_fewFalsePositives}
-\end{figure}
-
-\begin{figure}[h]
- \includegraphics[width=1.0\columnwidth]{images/02_manyFalsePositives_manyDetected.png}
- \centering
- \caption{Many eyes and smiles detected, but also many false positives.}
- \label{fig:01_manyFalsePositives}
-\end{figure}
-
-\begin{figure}[h]
- \includegraphics[width=1.0\columnwidth]{images/03_tradeof.png}
- \centering
- \caption{A tradeof between false positives and detected eyes and smiles.}
- \label{fig:03_tradeof}
-\end{figure}
-
-\begin{figure}[h]
+By detecting faces and just searching smiles and eyes in that region, we were able to significantly reduce the false positives. In Figure \ref{fig:04_withFaces} you can see how the faces get detected (red rectangle). 
+%
+\begin{figure}[H]
  \includegraphics[width=1\columnwidth]{images/04_withFaceRectangle.png}
  \centering
- \caption{Face detection shown.}
+ \setlength{\abovecaptionskip}{1pt}
+ \caption{Face detection}
  \label{fig:04_withFaces}
 \end{figure}
 
@@ -190,6 +194,7 @@ for (x, y, w, h) in faces:
 \end{figure}
 
 \section*{Conclusion}
+
 
 
 \bibliographystyle{plain}

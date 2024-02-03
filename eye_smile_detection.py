@@ -10,17 +10,8 @@ smile_cascade = cv2.CascadeClassifier('haarcascade_smile.xml')
 # Directory containing the images
 image_dir = '159.people/'
 
-# image_i = 0
-# show_images = [7,8,9,24,26]
-
-
 # Iterating through each image in the directory
 for image_name in os.listdir(image_dir):
-    #count images shown
-    # image_i += 1 
-    # if image_i not in show_images:
-    #     continue
-
     # Reading the image
     img_orig = cv2.imread(f'{image_dir}{image_name}')
     
@@ -32,7 +23,6 @@ for image_name in os.listdir(image_dir):
     new_width = int(width * ratio)
     # Resizing the image
     img = cv2.resize(img_orig, (new_width, new_height), interpolation=cv2.INTER_AREA)
-
     # Converting the resized image to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
@@ -48,9 +38,8 @@ for image_name in os.listdir(image_dir):
         # Drawing a rectangle around the detected face in the color image
         # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
-        # Detecting eyes within the face ROI
+        # Detecting eyes and smiles within the face ROI
         eyes = eye_cascade.detectMultiScale(roiGray, scaleFactor=1.1, minNeighbors=7, minSize=(20, 20)) 
-        # Detecting smiles within the face ROI
         smiles = smile_cascade.detectMultiScale(roiGray, scaleFactor=1.3 , minNeighbors=20 , minSize=(25, 25))
 
         # Drawing rectangles around detected eyes
