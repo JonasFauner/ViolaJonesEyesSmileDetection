@@ -185,17 +185,28 @@ By detecting faces and just searching smiles and eyes in that region, we were ab
  \label{fig:04_withFaces}
 \end{figure}
 
-%
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.4\textwidth]{images/confusion_matrix.png}
-    \caption{Normalized Confusion Matrix}
-    \label{fig:conf_matrix}
+The following figures show both the confusion matrices of the eyes and the smiles. We can see that we have relatively good numbers for predicted features, which are actually real features and predictions of no features where there are actually no features in specific areas of the pictures. The main problem is that many features where not detected. We also got a small number of detected features where there are no features in the pictures.
+
+\begin{figure}[H]
+ \includegraphics[width=1\columnwidth]{images/ConfusionMatrixEyes.PNG}
+ \centering
+ \setlength{\abovecaptionskip}{1pt}
+ \caption{Confusion Matrix Eyes}
+ \label{fig:ConfEyes}
 \end{figure}
 
+\begin{figure}[H]
+ \includegraphics[width=1\columnwidth]{images/ConfusionMatrixSmiles.PNG}
+ \centering
+ \setlength{\abovecaptionskip}{1pt}
+ \caption{Confusion Matrix Smiles}
+ \label{fig:ConfSmiles}
+\end{figure}
+
+
+
 \section*{Conclusion}
-
-
+We wrote a program for face detection on base of the Viola-Jones-Detection strategy. For this we used Python and the openCV library. First we had the Problem of detecting eyes and smiles everywhere in the pictures. Then after taking the step of detecting the faces first and then looking for eyes and smiles in the faces we got way better results. Lastly after optimizing the values of the parameters of the functions we got a even better result. We had to play around and there was a trade off between finding the actual eyes and smiles and finding fake ones. The program has problems finding faces when they are tilted, small or there is something blocking a part of it. With some changes in the code to cancel out some problems the potential of the detection is high. Improvements of this could be the detection of eyes in just the upper part of the face and smiles just in the lower part of the face, the detection of eyes with similar size and the detection of two eyes per face. Also for detecting smiles we can search in the horizontal middle of the face. One of the most important improvements could be the change of the image size to a optimum to find as many real faces as possible. To conclude we can say there would be some ways to improve our program to find more details which where not detected before, although the program as it is gives us some good results already.
 
 \bibliographystyle{plain}
 \bibliography{sources}{}
